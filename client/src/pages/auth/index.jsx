@@ -1,25 +1,92 @@
 import { useState } from "react";
 import sideImage from "../../assets/WEFWE.png";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { toast } from "sonner";
+import apiClient from "@/lib/api-client";
+import { LOGIN_ROUTE, SIGNUP_ROUTE } from "@/utils/constants";
+import { useNavigate } from "react-router-dom";
 
 const Auth = () => {
 
-const [email, setEmail] = useState("");
-const [password, setPassword] = useState("");
-const [confirmPassword, setConfirmPassword] = useState("");
+  const navigate = useNavigate();
 
-const handleLogin = async() => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
-}
-const handleRegister = async() => {
+  const validatSignUp = () => {
+    if (!email.length) {
+      toast.error("Email is required");
+      return false;
+    }
+    if (!password.length) {
+      toast.error("Password is required");
+      return false;
+    }
+    if (password !== confirmPassword) {
+      toast.error("Passwords do not match");
+      return false;
+    }
+    return true;
+  }
 
-}
+  const validateLogin = () => {
+    if (!email.length) {
+      toast.error("Email is required");
+      return false;
+    }
+    if (!password.length) {
+      toast.error("Password is required");
+      return false;
+    }
+    return true;
+  }
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    if (validateLogin()) {
+      const response = await apiClient.post(LOGIN_ROUTE, { email, password }, { withCredentials: true });
+      if (response.data.user.id) {
+        if (response.data.user.profileSetup) {
+          navigate("/chat");
+        } else {
+          navigate("/profile");
+        }
+      }
+    }
+
+
+  }
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    if (validatSignUp()) {
+      const response = await apiClient.post(SIGNUP_ROUTE, { email, password }, { withCredentials: true });
+      if (response.status === 201) {
+        navigate("/profile");
+      }
+    }
+  }
 
   return (
     <div className="h-screen w-full flex bg-gradient-to-r from-white to-green-200 ">
       <div className="relative h-screen w-[50%] ">
-        <h1 className="text-2xl pt-10 font-serif font-medium">Create your Triloq — Real people. Real talks.</h1>
-      <img src={sideImage} className="absolute bottom-0 left-0 h-[70vh] rounded-br-[30vh] border-b-[20px] border-green-950" alt="" />
+        <svg viewBox="0 0 200 200" className="w-[40vw] h-auto mt-6">
+          <defs>
+            <path
+              id="quarter-arc"
+              d="M 22 40 A 100 90 0 0 1 150 150"
+              fill="none"
+            />
+          </defs>
+          <text className="fill-green-900 text-[10px] font-serif">
+            <textPath href="#quarter-arc" startOffset="0%">
+              Create your Triloq — Real people. Real talks.
+            </textPath>
+          </text>
+        </svg>
+
+
+        <img src={sideImage} className="absolute bottom-0 left-0 h-[70vh] rounded-br-[30vh] border-b-[20px] border-green-950" alt="" />
       </div>
       <div className="w-[50%] h-screen pt-10 pb-10 pr-10">
         <div className="border-green-950 shadow-emerald-950 shadow-2xl border-b-[3vh] rounded-bl-[30vh] h-full w-full p-10 flex itemsq justify-center">
@@ -53,7 +120,7 @@ const handleRegister = async() => {
 
         </div>
       </div>
-    </div>  
+    </div>
   )
 }
 

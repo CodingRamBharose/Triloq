@@ -119,3 +119,40 @@ export const getUserInfo = async (req, res, next) => {
         }); 
     }
 }
+
+
+export const updateProfile = async (req, res, next) => {
+    try {
+        const {userId} = req;
+        const { firstName, lastName, color } = req.body;
+
+        if (!firstName || !lastName || !color) {
+            return res.status(400).send("All fields are required");
+        }
+
+        const userData = await User.findByIdAndUpdate(
+            userId,
+            { firstName, lastName, color, profileSetup: true },
+            { new: true, runValidators: true }
+        );
+
+        if (!userData) {
+            return res.status(404).send("User not found");
+        }
+
+        return res.status(200).json({
+            id: userData._id,
+            email: userData.email,
+            profileSetup: userData.profileSetup,
+            firstName: userData.firstName,
+            lastName: userData.lastName,
+            image: userData.image,
+            color: userData.color,
+        });
+    } catch (error) {
+        console.error('Error updating profile:', error);
+        return res.status(500).send({
+            message: 'Internal server error',
+        });
+    }
+}

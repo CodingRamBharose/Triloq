@@ -1,5 +1,5 @@
 import { useAppStore } from "@/store";
-import { useState } from "react";
+import { use, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../../assets/triloq.png";
 import chat from "../../assets/chat.jpg";
@@ -8,11 +8,14 @@ import emoj from "../../assets/emoj.jpg";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { colors, getColor } from "@/lib/utils";
 import { FaPlus, FaTrash } from "react-icons/fa";
+import { toast } from "sonner";
+import apiClient from "@/lib/api-client";
+import { UPDATE_PROFILE_ROUTE } from "@/utils/constants";
 
 
 const Profile = () => {
   const navigate = useNavigate();
-  const { userInfo } = useAppStore();
+  const { userInfo, setUserInfo } = useAppStore();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [image, setImage] = useState(null);
@@ -20,9 +23,40 @@ const Profile = () => {
   const [selectedColor, setSelectedColor] = useState(0);
 
 
+  useEffect(()=>{
+    if(userInfo && userInfo.profileSetup){
+      setFirstName(userInfo.firstName || "");
+      setLastName(userInfo.lastName || "");
+      setSelectedColor(userInfo.color || 0);
+    }
+  },[userInfo]);
+
+
+  const validateProfile = () => {
+    if (!firstName) {
+      toast.error("First name is required");
+      return false;
+    }
+    if (!lastName) {
+      toast.error("Last name is required");
+      return false;
+    }
+    return true;
+  }
 
   const saveChanges = async () => {
-
+    if (validateProfile()) {
+      try {
+        const response = await apiClient.post(UPDATE_PROFILE_ROUTE, { firstName, lastName, color: selectedColor }, { withCredentials: true });
+        if(response.status === 200 && response.data){
+          setUserInfo({...response.data});
+          toast.success("Profile updated successfully");
+          navigate("/chat");
+        }
+      } catch (error) {
+        console.error("Error saving profile changes:", error);
+      }
+    }
   }
 
 

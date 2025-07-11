@@ -1,6 +1,7 @@
 import { compare } from "bcrypt";
 import User from "../models/UserModel.js";
 import jwt from 'jsonwebtoken';
+import { renameSync, unlinkSync } from "fs";
 
 const maxAge = 3 * 24 * 60 * 60 * 1000;
 const createToken = (email, userId) => {
@@ -149,6 +150,58 @@ export const updateProfile = async (req, res, next) => {
             image: userData.image,
             color: userData.color,
         });
+    } catch (error) {
+        console.error('Error updating profile:', error);
+        return res.status(500).send({
+            message: 'Internal server error',
+        });
+    }
+}
+export const addProfileImage = async (req, res, next) => {
+    try {
+        if(!req.file){
+            return res.status(400).send("Image is required");
+        }
+
+        const date = Date.now();
+        let fileName = "uploads/profiles/" + date + req.file.originalname;
+        renameSync(req.file.path, fileName); 
+
+        const updateUser = await User.findByIdAndUpdate(req.userId, {
+            image: fileName,
+        }, {new: true, runValidators: true});
+
+        return res.status(200).json({
+            image: updateUser.image,
+        });
+    } catch (error) {
+        console.error('Error updating profile:', error);
+        return res.status(500).send({
+            message: 'Internal server error',
+        });
+    }
+}
+
+
+export const removeProfileImage = async (req, res, next) => {
+    try {
+        const {userId} = req;
+        const user = await User.findById(userId);
+
+        if (!user || !user.image) {
+            return res.status(404).send("User or image not found");
+        }
+        
+        if(user.image){
+            unlinkSync(user.image);  
+        }
+
+        user.image = null;
+        await user.save();
+
+        
+
+        return res.status(200).send("Profile image removed successfully");
     } catch (error) {
         console.error('Error updating profile:', error);
         return res.status(500).send({

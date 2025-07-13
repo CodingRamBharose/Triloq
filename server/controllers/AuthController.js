@@ -167,9 +167,9 @@ export const addProfileImage = async (req, res, next) => {
         let fileName = "uploads/profiles/" + date + req.file.originalname;
         renameSync(req.file.path, fileName); 
 
-        const updateUser = await User.findByIdAndUpdate(req.userId, {
-            image: fileName,
-        }, {new: true, runValidators: true});
+        const updateUser = await User.findByIdAndUpdate(req.userId, 
+            { firstName, lastName, color, profileSetup: true, image: fileName },
+             {new: true, runValidators: true});
 
         return res.status(200).json({
             image: updateUser.image,

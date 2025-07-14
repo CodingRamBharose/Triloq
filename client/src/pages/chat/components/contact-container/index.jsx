@@ -1,6 +1,7 @@
 import React from 'react'
 import logo from "@/assets/triloq.png";
 import Title from '@/components/ui/title';
+import ProfileInfo from './components/profile-info';
 
 const ContactContainer = () => {
   return (
@@ -19,6 +20,7 @@ const ContactContainer = () => {
           <Title text = "Channels"/>
         </div>
       </div>
+      <ProfileInfo/>
     </div>
   )
 }

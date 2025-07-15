@@ -9,16 +9,17 @@ import { GET_USER_INFO_ROUTE } from './utils/constants'
 
 
 
-const privateRoutes = ({ children }) => {
+const PrivateRoutes = ({ children }) => {
   const { userInfo } = useAppStore();
   const isAuthenticated = !!userInfo;
-  return isAuthenticated ? <Navigate to="/chat" /> : children;
-}
+  return isAuthenticated ? children : <Navigate to="/auth" />;
+};
+
 
 const AuthRoute = ({ children }) => {
   const { userInfo } = useAppStore();
   const isAuthenticated = !!userInfo;
-  return !isAuthenticated ? children : <Navigate to="/chat" />
+  return isAuthenticated ? <Navigate to="/chat" /> : children;
 }
 
 
@@ -60,8 +61,8 @@ const App = () => {
     <BrowserRouter>
       <Routes>
         <Route path="/auth" element={<AuthRoute><Auth /></AuthRoute>} />
-        <Route path="/chat" element={<privateRoutes><Chat /></privateRoutes>} />
-        <Route path="/profile" element={<privateRoutes><Profile /></privateRoutes>} />
+        <Route path="/chat" element={<PrivateRoutes><Chat /></PrivateRoutes>} />
+        <Route path="/profile" element={<PrivateRoutes><Profile /></PrivateRoutes>} />
         <Route path="/*" element={<Navigate to="/auth" />} />
       </Routes>
     </BrowserRouter>

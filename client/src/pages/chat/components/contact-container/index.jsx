@@ -2,6 +2,7 @@ import React from 'react'
 import logo from "@/assets/triloq.png";
 import Title from '@/components/ui/title';
 import ProfileInfo from './components/profile-info';
+import NewDM from './components/new-dm';
 
 const ContactContainer = () => {
   return (
@@ -11,8 +12,9 @@ const ContactContainer = () => {
         <h2 className='text-3xl font-bold'>TriloQ</h2>
       </div>
       <div className='my-2'>
-        <div className='flex items-center justify-between pr-10'>
+        <div className='flex items-center justify-between pr-15'>
           <Title text = "Direct Messages"/>
+          <NewDM/>
         </div>
       </div>
       <div className='my-3'>

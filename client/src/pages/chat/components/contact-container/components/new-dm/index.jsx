@@ -4,7 +4,7 @@ import { useState } from "react";
 import { FaPlus } from "react-icons/fa";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import apiClient from "@/lib/api-client";
-import { SEARCH_CONTACTS_ROUTE } from "@/utils/constants.js";
+import { HOST, SEARCH_CONTACTS_ROUTE } from "@/utils/constants.js";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { getColor } from "@/lib/utils";
@@ -85,7 +85,7 @@ const NewDM = () => {
                           <span>{
                             contact.firstName && contact.lastName ? `${contact.firstName} ${contact.lastName}` : contact.email
                           }</span>
-                          <spna className="text-xs">{contact.email}</spna>
+                          <span className="text-xs">{contact.email}</span>
                         </div>
                       </div>
                     ))

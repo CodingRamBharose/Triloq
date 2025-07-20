@@ -6,15 +6,18 @@ import { IoSend } from 'react-icons/io5';
 import EmojiPicker from 'emoji-picker-react';
 import { useAppStore } from '@/store';
 import { useSocket } from '@/context/socketContext';
+import apiClient from '@/lib/api-client';
+import { UPLOAD_FILE_ROUTE } from '@/utils/constants';
 
 
 const MessageBar = () => {
 
-  const { selectedChatData, selectedChatType, addMessage, userInfo } = useAppStore();
+  const { selectedChatData, selectedChatType, addMessage, userInfo, setIsUploadingFile, setFileUploadProgress } = useAppStore();
 
   const socket = useSocket();
 
   const emojiRef = useRef(null);
+  const fileInputRef = useRef(null);
   const emojiButtonRef = useRef(null);
 
   const [message, setMessage] = useState('');
@@ -44,7 +47,7 @@ const MessageBar = () => {
   }
 
   const handleSendMessage = async () => {
-    if(selectedChatType === "contact") {
+    if (selectedChatType === "contact") {
       socket.emit("sendMessage", {
         sender: userInfo.id,
         content: message,
@@ -52,6 +55,47 @@ const MessageBar = () => {
         messageType: "text",
         fileUrl: undefined
       })
+    }
+  }
+
+  const handleAtachmentClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  }
+
+  const handleAttachmentChange = async (event) => {
+    try {
+      const file = event.target.files[0];
+      if (file) {
+        const formData = new FormData();
+        formData.append('file', file);
+        setIsUploadingFile(true);
+
+        const response = await apiClient.post(UPLOAD_FILE_ROUTE, formData, { withCredentials: true,
+          onUploadProgress: (progressEvent) => {
+            const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            setFileUploadProgress(progress);
+          }
+         });
+
+        if (response.status === 200) {
+          setIsUploadingFile(false);
+          if (selectedChatType === "contact") {
+            socket.emit("sendMessage", {
+              sender: userInfo.id,
+              content: undefined,
+              recipient: selectedChatData._id,
+              messageType: "file",
+              fileUrl: response.data.filePath
+            });
+          }
+
+        }
+      }
+    } catch (error) {
+      setIsUploadingFile(false);
+      console.error('Error handling attachment change:', error);
     }
   }
 
@@ -64,9 +108,10 @@ const MessageBar = () => {
           value={message}
           onChange={(e) => setMessage(e.target.value)}
         />
-        <button className='text-neutral-500 foucs:border-none focus:outline-none focus:text-white duration-300 transition-all cursor-pointer'>
+        <button className='text-neutral-500 foucs:border-none focus:outline-none focus:text-white duration-300 transition-all cursor-pointer' onClick={handleAtachmentClick}>
           <GrAttachment className='text-2xl' />
         </button>
+        <input type="file" ref={fileInputRef} className='hidden' onChange={handleAttachmentChange} />
         <div className='relative'>
           <button
             ref={emojiButtonRef}

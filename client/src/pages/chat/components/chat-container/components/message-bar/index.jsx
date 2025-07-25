@@ -55,7 +55,16 @@ const MessageBar = () => {
         messageType: "text",
         fileUrl: undefined
       })
+    } else if (selectedChatType === "channel") {
+      socket.emit("sendChannelMessage", {
+        sender: userInfo.id,
+        content: message,
+        channelId: selectedChatData._id,
+        messageType: "text",
+        fileUrl: undefined
+      });
     }
+    setMessage('');
   }
 
   const handleAtachmentClick = () => {
@@ -72,12 +81,13 @@ const MessageBar = () => {
         formData.append('file', file);
         setIsUploadingFile(true);
 
-        const response = await apiClient.post(UPLOAD_FILE_ROUTE, formData, { withCredentials: true,
+        const response = await apiClient.post(UPLOAD_FILE_ROUTE, formData, {
+          withCredentials: true,
           onUploadProgress: (progressEvent) => {
             const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
             setFileUploadProgress(progress);
           }
-         });
+        });
 
         if (response.status === 200) {
           setIsUploadingFile(false);
@@ -86,6 +96,14 @@ const MessageBar = () => {
               sender: userInfo.id,
               content: undefined,
               recipient: selectedChatData._id,
+              messageType: "file",
+              fileUrl: response.data.filePath
+            });
+          } else if (selectedChatType === "channel") {
+            socket.emit("sendChannelMessage", {
+              sender: userInfo.id,
+              content: undefined,
+              channelId: selectedChatData._id,
               messageType: "file",
               fileUrl: response.data.filePath
             });
